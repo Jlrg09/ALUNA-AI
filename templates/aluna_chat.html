@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aluna AI Chat</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/aluna_style.css') }}">
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#457B9D',
+              'background-light': '#FAF3E0',
+              'background-dark': '#111c21',
+              'user-bubble': '#D3C5AA',
+              'ai-bubble': '#A8DADC',
+              'text-dark': '#333333',
+            },
+            fontFamily: {
+              display: ['Manrope', 'sans-serif'],
+              serif: ['Lora', 'serif'],
+            },
+            borderRadius: {
+              DEFAULT: '0.5rem',
+              lg: '1rem',
+              xl: '1.5rem',
+              full: '9999px',
+            },
+          },
+        },
+      }
+    </script>
+    <style>.font-lora{font-family:'Lora',serif}</style>
+</head>
+<body class="bg-background-light font-display" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'rgba(211, 197, 170, 0.2)\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+<div class="relative flex h-screen w-full flex-row overflow-hidden">
+  <!-- Sidebar -->
+  <aside class="w-80 flex-shrink-0 bg-background-light/80 backdrop-blur-sm border-r border-solid border-user-bubble/30 flex flex-col">
+    <div class="p-6 border-b border-solid border-user-bubble/30">
+      <div class="flex items-center gap-3 text-text-dark">
+        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+          <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path></svg>
+        </div>
+        <div>
+          <h2 class="text-text-dark text-lg font-bold leading-tight tracking-tight">Aluna AI</h2>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto p-3 space-y-1" id="conversationsList">
+      <div class="hidden" id="emptyConversations">Aún no tienes conversaciones.</div>
+      <a class="group flex items-center gap-3 p-3 rounded-lg bg-user-bubble/40 text-text-dark font-medium hover:bg-user-bubble/60 transition-colors" href="#">
+        <span class="material-symbols-outlined text-xl text-text-dark">chat_bubble</span>
+        <span class="truncate text-sm font-medium">Cultura Kogui y hábitos...</span>
+        <span class="material-symbols-outlined text-base ml-auto opacity-0 group-hover:opacity-70 text-text-dark">more_horiz</span>
+      </a>
+      <a class="group flex items-center gap-3 p-3 rounded-lg hover:bg-user-bubble/30 text-text-dark font-normal transition-colors" href="#">
+        <span class="material-symbols-outlined text-xl text-text-dark">chat_bubble</span>
+        <span class="truncate text-sm">Proyecto de investigación</span>
+        <span class="material-symbols-outlined text-base ml-auto opacity-0 group-hover:opacity-70 text-text-dark">more_horiz</span>
+      </a>
+      <a class="group flex items-center gap-3 p-3 rounded-lg hover:bg-user-bubble/30 text-text-dark font-normal transition-colors" href="#">
+        <span class="material-symbols-outlined text-xl text-text-dark">chat_bubble</span>
+        <span class="truncate text-sm">Conexión con la naturaleza</span>
+        <span class="material-symbols-outlined text-base ml-auto opacity-0 group-hover:opacity-70 text-text-dark">more_horiz</span>
+      </a>
+    </nav>
+    <div class="p-3 border-t border-solid border-user-bubble/30">
+      <button id="newConversationBtn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm">
+        <span class="material-symbols-outlined text-lg">add</span>
+        <span class="text-sm font-medium">Nueva conversación</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="flex-1 flex flex-col h-full">
+    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-user-bubble/30 px-8 py-4 bg-background-light/80 backdrop-blur-sm">
+      <div>
+        <h2 id="conversationTitle" class="text-text-dark text-lg font-semibold leading-tight tracking-tight">Conversación sobre la Cultura Kogui</h2>
+        <p id="conversationDate" class="text-xs text-text-dark/60 mt-0.5">Iniciada el 15 de Mayo de 2024</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="toggleTheme" class="p-2 rounded-full hover:bg-user-bubble/40 transition-colors" title="Tema">
+          <span class="material-symbols-outlined text-text-dark/70 text-xl">dark_mode</span>
+        </button>
+        <button id="settingsBtn" class="p-2 rounded-full hover:bg-user-bubble/40 transition-colors hidden" title="Configuración">
+          <span class="material-symbols-outlined text-text-dark/70 text-xl">settings</span>
+        </button>
+        <button id="clearChat" class="p-2 rounded-full hover:bg-user-bubble/40 transition-colors hidden" title="Limpiar">
+          <span class="material-symbols-outlined text-text-dark/70 text-xl">refresh</span>
+        </button>
+        <div class="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=Usuario&background=D3C5AA&color=333" alt="Usuario" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 px-8 py-6 overflow-y-auto" id="messagesContainer">
+      <!-- AI Message with avatar on left -->
+      <div class="flex items-start gap-3 mb-6">
+        <div class="w-10 h-10 rounded-full bg-gray-400 flex-shrink-0 overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=Aluna&background=666&color=fff" alt="Aluna AI" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex flex-col gap-2 max-w-2xl">
+          <p class="text-xs text-text-dark font-medium">Aluna AI</p>
+          <div class="bg-ai-bubble rounded-2xl rounded-tl-sm px-5 py-3 shadow-sm">
+            <p class="text-base leading-relaxed text-gray-800">¡Hola! Soy Aluna AI, tu guía en el camino del conocimiento. ¿En qué puedo ayudarte hoy?</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Suggestion chips below AI message -->
+      <div class="flex flex-wrap gap-2 mb-6 ml-14">
+        <button class="quick-btn px-4 py-2 rounded-full bg-user-bubble/70 hover:bg-user-bubble text-text-dark text-sm font-medium transition-colors shadow-sm" data-question="¿Puedes contarme sobre la cultura Kogui?">
+          ¿Puedes contarme sobre la cultura Kogui?
+        </button>
+        <button class="quick-btn px-4 py-2 rounded-full bg-user-bubble/70 hover:bg-user-bubble text-text-dark text-sm font-medium transition-colors shadow-sm" data-question="¿Necesito ayuda con mi proyecto de investigación?">
+          ¿Necesito ayuda con mi proyecto de investigación?
+        </button>
+        <button class="quick-btn px-4 py-2 rounded-full bg-user-bubble/70 hover:bg-user-bubble text-text-dark text-sm font-medium transition-colors shadow-sm" data-question="¿Cómo puedo mejorar mis hábitos de estudio?">
+          ¿Cómo puedo mejorar mis hábitos de estudio?
+        </button>
+      </div>
+
+      <!-- User Message with avatar on right -->
+      <div class="flex items-start gap-3 mb-6 justify-end">
+        <div class="flex flex-col gap-2 max-w-2xl items-end">
+          <p class="text-xs text-text-dark font-medium">Tú</p>
+          <div class="bg-user-bubble rounded-2xl rounded-tr-sm px-5 py-3 shadow-sm">
+            <p class="text-base leading-relaxed text-gray-800 font-medium">Can you tell me about the Kogui culture?</p>
+          </div>
+        </div>
+        <div class="w-10 h-10 rounded-full bg-gray-300 flex-shrink-0 overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=Usuario&background=D3C5AA&color=333" alt="Usuario" class="w-full h-full object-cover" />
+        </div>
+      </div>
+
+      <!-- AI Response -->
+      <div class="flex items-start gap-3 mb-6">
+        <div class="w-10 h-10 rounded-full bg-gray-400 flex-shrink-0 overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=Aluna&background=666&color=fff" alt="Aluna AI" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex flex-col gap-2 max-w-2xl">
+          <p class="text-xs text-text-dark font-medium">Aluna AI</p>
+          <div class="bg-ai-bubble rounded-2xl rounded-tl-sm px-5 py-3 shadow-sm">
+            <p class="text-base leading-relaxed text-gray-800">Claro. Los Kogui son un pueblo indígena que habita la Sierra Nevada de Santa Marta. Son conocidos como los "Hermanos Mayores" y su filosofía se basa en el concepto de "Aluna", el mundo espiritual que es la fuente de toda vida y conocimiento. Creen que su misión es mantener el equilibrio del universo a través de rituales y ofrendas. Su cultura es un tesoro de sabiduría ancestral sobre la conexión entre la humanidad y la naturaleza.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Typing Indicator -->
+    <div class="hidden px-8 py-2" id="typingIndicator">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-gray-400 flex-shrink-0 overflow-hidden">
+          <img src="https://ui-avatars.com/api/?name=Aluna&background=666&color=fff" alt="Aluna AI" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <p class="text-xs text-text-dark font-medium">Aluna AI</p>
+          <div class="bg-ai-bubble rounded-2xl rounded-tl-sm px-5 py-3 flex gap-1 shadow-sm">
+            <span class="w-2 h-2 bg-gray-700 rounded-full animate-bounce"></span>
+            <span class="w-2 h-2 bg-gray-700 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+            <span class="w-2 h-2 bg-gray-700 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <input type="file" id="fileUploadInput" class="hidden" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.png,.jpg,.jpeg" />
+    <div class="px-8 py-4 border-t border-solid border-user-bubble/30 bg-background-light/80 backdrop-blur-sm">
+      <div class="flex items-center gap-3 bg-user-bubble/70 rounded-full px-5 py-2 max-w-5xl mx-auto shadow-sm">
+        <textarea id="messageInput" rows="1" maxlength="2000" class="flex-1 resize-none bg-transparent border-none focus:outline-none focus:ring-0 text-text-dark placeholder:text-text-dark/60 text-base py-1 font-medium" placeholder="Escribe aquí tu pregunta o pensamiento..."></textarea>
+        <button class="flex items-center justify-center p-1.5 text-text-dark hover:text-text-dark/80 transition-colors" id="attachmentBtn" title="Adjuntar archivo">
+          <span class="material-symbols-outlined text-xl">attach_file</span>
+        </button>
+        <button class="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary/90 transition-colors" id="sendBtn" disabled>
+          <span>Enviar</span>
+          <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </button>
+      </div>
+      <div class="flex justify-between items-center max-w-5xl mx-auto mt-2 px-2">
+        <span class="text-xs text-text-dark/50" id="characterCount">0/2000</span>
+        <div class="status-indicator hidden" id="statusIndicator">
+          <div class="status-dot online"></div>
+          <span class="status-text text-xs text-text-dark/50">En línea</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-content bg-background-light rounded-xl p-6 max-w-md w-full mx-4">
+    <div class="modal-header flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold text-text-dark">Configuración</h3>
+      <button class="close-btn p-2 hover:bg-user-bubble/40 rounded-lg" id="closeSettings">
+        <span class="material-symbols-outlined text-text-dark">close</span>
+      </button>
+    </div>
+    <div class="modal-body space-y-4">
+      <div class="setting-group">
+        <label for="themeSelect" class="block text-sm font-medium text-text-dark mb-2">Tema</label>
+        <select id="themeSelect" class="w-full px-3 py-2 bg-user-bubble/40 border border-user-bubble/60 rounded-lg text-text-dark focus:outline-none focus:ring-2 focus:ring-primary">
+          <option value="light">Claro</option>
+          <option value="dark">Oscuro</option>
+          <option value="auto">Automático</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label for="fontSizeRange" class="block text-sm font-medium text-text-dark mb-2">Tamaño de fuente</label>
+        <div class="flex items-center gap-3">
+          <input type="range" id="fontSizeRange" min="12" max="18" value="14" class="flex-1">
+          <span id="fontSizeValue" class="text-sm text-text-dark font-medium">14px</span>
+        </div>
+      </div>
+      <div class="setting-group">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="soundNotifications" class="w-4 h-4 text-primary focus:ring-primary rounded">
+          <span class="text-sm text-text-dark">Notificaciones de sonido</span>
+        </label>
+      </div>
+      <div class="setting-group">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="autoScroll" checked class="w-4 h-4 text-primary focus:ring-primary rounded">
+          <span class="text-sm text-text-dark">Desplazamiento automático</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications -->
+<div class="toast-container fixed top-4 right-4 z-50 space-y-2" id="toastContainer"></div>
+
+<script src="{{ url_for('static', filename='js/aluna_chat.js') }}"></script>
+</body>
+</html>

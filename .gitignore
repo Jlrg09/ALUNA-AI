@@ -1,0 +1,23 @@
+node_modules
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+.env
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+
+# Runtime artifacts
+tokens/
+*.log
+
+# Data files
+data/*.pkl
+
+# Build outputs
+dist/
+build/

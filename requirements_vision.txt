@@ -1,0 +1,24 @@
+# Dependencias adicionales para visión computacional
+# Instalar con: pip install -r requirements_vision.txt
+
+# Visión por computadora y procesamiento de imágenes
+opencv-python>=4.8.0
+Pillow>=10.0.0
+
+# Modelos de transformers para análisis de imágenes
+transformers>=4.40.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Modelos específicos para visión
+# BLIP para descripción de imágenes
+# ViT para clasificación de objetos
+
+# Dependencias adicionales para procesamiento
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Opcional: Aceleración GPU (descomenta si tienes CUDA)
+# --index-url https://download.pytorch.org/whl/cu121
+# torch>=2.0.0+cu121
+# torchvision>=0.15.0+cu121
